@@ -1,0 +1,7 @@
+
+.venv/
+__pycache__/
+*.py[cod]
+.env
+intellishield.db
+.streamlit/secrets.toml
