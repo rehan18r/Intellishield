@@ -2,7 +2,7 @@
 from collections import defaultdict, deque
 from time import monotonic
 
-from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from ml_model import detect_anomaly
