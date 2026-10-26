@@ -13,6 +13,17 @@ app = FastAPI(
     description="ML-driven protection against simulated call and SMS bombing",
     version="1.0.0"
 )
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://intellishield.vercel.app",
+    ],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
 
 WINDOW_SECONDS = 60
 MAX_REQUESTS = 5

@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliShield | AI Security Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: #080d18; color: #e7edf8;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      padding: 22px 5%; border-bottom: 1px solid #243047;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .brand { font-size: 23px; font-weight: bold; }
+    .brand span { color: #36e0b1; }
+    .status { color: #36e0b1; font-size: 13px; }
+    main { max-width: 1100px; margin: auto; padding: 28px 20px; }
+    h1 { margin-bottom: 8px; font-size: 30px; }
+    .muted { color: #91a0b8; line-height: 1.6; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px; margin: 26px 0;
+    }
+    .card {
+      background: #101a2b; border: 1px solid #263650;
+      border-radius: 14px; padding: 20px;
+    }
+    .metric { font-size: 28px; font-weight: bold; margin-top: 12px; }
+    .label { color: #9aabc3; font-size: 13px; }
+    .layout {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    input, select, button {
+      width: 100%; padding: 13px; margin-top: 10px;
+      border-radius: 8px; border: 1px solid #34445e;
+      background: #0b1322; color: #eef4ff; font-size: 14px;
+    }
+    button {
+      background: #28d6a4; color: #06130f; font-weight: bold;
+      cursor: pointer; border: 0;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    .secondary { background: #253650; color: white; }
+    pre {
+      white-space: pre-wrap; overflow-wrap: anywhere;
+      background: #080d18; border-radius: 8px; padding: 14px;
+      color: #b7c8df; font-size: 12px; line-height: 1.6;
+    }
+    .notice { margin-top: 18px; font-size: 13px; color: #a8b5c9; }
+    footer {
+      padding: 24px; text-align: center; color: #7889a4;
+      border-top: 1px solid #243047; font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">🛡️ Intelli<span>Shield</span></div>
+    <div class="status" id="connection">● Checking backend...</div>
+  </header>
+
+  <main>
+    <h1>AI Security Dashboard</h1>
+    <p class="muted">
+      ML-driven API firewall for simulated call and SMS bombing mitigation.
+      Monitor API health and test verification requests.
+    </p>
+
+    <section class="grid">
+      <div class="card">
+        <div class="label">Backend</div>
+        <div class="metric" id="backendStatus">Checking</div>
+      </div>
+      <div class="card">
+        <div class="label">Requests tested on this page</div>
+        <div class="metric" id="total">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Allowed</div>
+        <div class="metric" id="allowed">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Blocked / Flagged</div>
+        <div class="metric" id="blocked">0</div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card">
+        <h2>Test a Request</h2>
+        <p class="muted">Send a test request to the live Render API.</p>
+        <form id="requestForm">
+          <label for="account">Test account ID</label>
+          <input id="account" maxlength="40" required
+                 placeholder="e.g. demo-user-01">
+          <label for="channel">Channel</label>
+          <select id="channel">
+            <option value="sms">SMS (simulation)</option>
+            <option value="call">Call (simulation)</option>
+          </select>
+          <button id="submitBtn" type="submit">Analyze Request</button>
+        </form>
+        <button class="secondary" id="healthBtn" type="button">
+          Check Backend Health
+        </button>
+        <p class="notice">
+          Demo only: no real SMS or phone calls are sent.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Latest API Response</h2>
+        <p class="muted" id="resultText">Submit a test request to see the result.</p>
+        <pre id="response">Waiting for request...</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    IntelliShield · Educational security prototype · Render API + Vercel frontend
+  </footer>
+
+  <script>
+    const API_URL = "https://intellishield.onrender.com";
+    const stats = { total: 0, allowed: 0, blocked: 0 };
+
+    function updateStats() {
+      document.getElementById("total").textContent = stats.total;
+      document.getElementById("allowed").textContent = stats.allowed;
+      document.getElementById("blocked").textContent = stats.blocked;
+    }
+
+    async function checkHealth() {
+      const status = document.getElementById("connection");
+      const metric = document.getElementById("backendStatus");
+      status.textContent = "● Checking backend...";
+      try {
+        const res = await fetch(`${API_URL}/health`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        status.textContent = "● Backend reachable";
+        metric.textContent = "Online";
+        document.getElementById("resultText").textContent =
+          "Health check successful.";
+        document.getElementById("response").textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        status.textContent = "● Connection failed";
+        metric.textContent = "Unavailable";
+        document.getElementById("resultText").textContent =
+          "Could not reach the API. Check backend status and CORS settings.";
+        document.getElementById("response").textContent = err.message;
+      }
+    }
+
+    document.getElementById("healthBtn").addEventListener("click", checkHealth);
+
+    document.getElementById("requestForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const button = document.getElementById("submitBtn");
+      const account_id = document.getElementById("account").value.trim();
+      const channel = document.getElementById("channel").value;
+
+      if (!account_id) return;
+
+      button.disabled = true;
+      button.textContent = "Analyzing...";
+      document.getElementById("resultText").textContent =
+        "Waiting for API response...";
+
+      try {
+        const res = await fetch(`${API_URL}/request-verification`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account_id, channel })
+        });
+
+        const data = await res.json();
+        const details = data.detail || data;
+        const decision = details.decision || "UNKNOWN";
+
+        stats.total++;
+        if (decision === "ALLOW") stats.allowed++;
+        if (decision === "BLOCK" || decision === "FLAG") stats.blocked++;
+        updateStats();
+
+        document.getElementById("resultText").textContent =
+          `HTTP ${res.status} · Decision: ${decision}`;
+        document.getElementById("response").textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById("resultText").textContent =
+          "Request failed. Check API availability and CORS settings.";
+        document.getElementById("response").textContent = err.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Analyze Request";
+      }
+    });
+
+    checkHealth();
+  </script>
+</body>
+</html>
