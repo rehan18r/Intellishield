@@ -2,6 +2,7 @@
 from collections import defaultdict, deque
 from time import monotonic
 
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -10,8 +11,8 @@ from database import init_db, log_request
 
 app = FastAPI(
     title="IntelliShield API Firewall",
-    description="ML-driven protection against simulated call and SMS bombing",
-    version="1.0.0"
+    version="1.0.0",
+    description="ML-driven protection against simulated call and SMS bombing"
 )
 from fastapi.middleware.cors import CORSMiddleware
 
