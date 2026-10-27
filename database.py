@@ -1,5 +1,5 @@
-
 import sqlite3
+from datetime import datetime
 
 DB_NAME = "intellishield.db"
 
@@ -7,68 +7,53 @@ DB_NAME = "intellishield.db"
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS request_logs (
+        CREATE TABLE IF NOT EXISTS traffic_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            account_id TEXT NOT NULL,
-            channel TEXT NOT NULL,
-            requests_in_window INTEGER,
-            prediction TEXT,
-            anomaly_score REAL,
-            decision TEXT NOT NULL,
+            ip_address TEXT,
+            endpoint TEXT,
+            request_rate REAL,
+            user_agent_score REAL,
+            ml_prediction TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
-
     conn.commit()
     conn.close()
 
 
-def log_request(
-    account_id,
-    channel,
-    requests_in_window,
-    prediction,
-    anomaly_score,
-    decision
-):
+def log_decision(ip_address, endpoint, request_rate, user_agent_score, ml_prediction):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-
     cursor.execute("""
-        INSERT INTO request_logs (
-            account_id,
-            channel,
-            requests_in_window,
-            prediction,
-            anomaly_score,
-            decision
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        account_id,
-        channel,
-        requests_in_window,
-        prediction,
-        anomaly_score,
-        decision
-    ))
-
+        INSERT INTO traffic_logs (ip_address, endpoint, request_rate, user_agent_score, ml_prediction)
+        VALUES (?, ?, ?, ?, ?)
+    """, (ip_address, endpoint, request_rate, user_agent_score, ml_prediction))
     conn.commit()
     conn.close()
 
 
-def get_logs():
+def get_stats():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT * FROM request_logs
-        ORDER BY id DESC
-    """)
+    cursor.execute("SELECT COUNT(*) as total FROM traffic_logs")
+    total = cursor.fetchone()["total"]
 
-    rows = [dict(row) for row in cursor.fetchall()]
+    cursor.execute("SELECT COUNT(*) as blocked FROM traffic_logs WHERE ml_prediction = 'Blocked'")
+    blocked = cursor.fetchone()["blocked"]
+
+    cursor.execute("SELECT COUNT(*) as allowed FROM traffic_logs WHERE ml_prediction = 'Allowed'")
+    allowed = cursor.fetchone()["allowed"]
+
+    cursor.execute("SELECT * FROM traffic_logs ORDER BY timestamp DESC LIMIT 20")
+    recent = [dict(row) for row in cursor.fetchall()]
+
     conn.close()
-    return rows
+    return {
+        "total_requests": total,
+        "blocked": blocked,
+        "allowed": allowed,
+        "recent_attacks": recent
+    }
