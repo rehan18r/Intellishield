@@ -17,7 +17,7 @@ def intellishield_firewall():
         ip = request.remote_addr or "127.0.0.1"
         ua_header = request.headers.get("User-Agent", "")
         ua_randomness = min(1.0, len(set(ua_header.split())) / 10.0) if ua_header else 0.0
-        conn = sqlite3.connect("intellishield.db")
+        conn = sqlite3.connect("/tmp/intellishield.db")
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM traffic_logs WHERE ip_address = ?", (ip,))
         recent_count = cursor.fetchone()[0]

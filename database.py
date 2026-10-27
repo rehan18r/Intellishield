@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 
-DB_NAME = "intellishield.db"
+DB_NAME = "/tmp/intellishield.db"
 
 
 def init_db():
