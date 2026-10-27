@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliShield — ML API Firewall</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>🛡️ IntelliShield</h1>
+      <p class="subtitle">ML-Driven API Firewall for Call & SMS Bombing Mitigation</p>
+      <div class="badge">LIVE PROTOTYPE</div>
+    </header>
+
+    <main>
+      <section class="metrics">
+        <div class="card">
+          <div class="label">Total Requests</div>
+          <div class="value" id="statTotal">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Blocked</div>
+          <div class="value danger" id="statBlocked">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Allowed</div>
+          <div class="value good" id="statAllowed">0</div>
+        </div>
+      </section>
+
+      <section class="charts">
+        <div class="chart-box">
+          <h2>Traffic Decisions</h2>
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h2>Requests Over Time</h2>
+          <canvas id="lineChart"></canvas>
+        </div>
+      </section>
+
+      <section class="simulation">
+        <h2>Simulation Panel</h2>
+        <p>Trigger simulated normal or bot traffic to the mock <code>/api/send-otp</code> endpoint.</p>
+        <div class="sim-buttons">
+          <button onclick="simulate('normal')" class="btn primary">Normal Request</button>
+          <button onclick="simulate('attack')" class="btn danger">Attack / Bot Simulation</button>
+        </div>
+        <pre id="simOutput">Ready to simulate...</pre>
+      </section>
+
+      <section class="live-log">
+        <h2>Live Firewall Log</h2>
+        <div id="logFeed" class="log-feed"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
